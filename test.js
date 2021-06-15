@@ -122,6 +122,58 @@ describe.each(singleTagInputs)('The parser returns a list containing the parsed 
     });
 });
 
+test('With nested tags', () => {
+    // Given
+    const input = `\
+<html>
+    <body>
+        <h1>This is a test!</h1>
+        <p    class="hello-world">Hello, World!</p>
+    </body>
+</html>
+`;
+    const parser = new Parser();
+
+    // When
+    const tags = parser.parse(input);
+
+    // Then
+    expect(tags).toHaveLength(1);
+
+    const html = tags[0];
+
+    expect(html).toBeInstanceOf(Tag);
+    expect(html.name).toEqual('html');
+    expect(html.text).toEqual('\n    \n');
+    expect(html.attributes.size).toBe(0);
+    expect(html.children).toHaveLength(1);
+
+    const body = html.children[0];
+
+    expect(body).toBeInstanceOf(Tag);
+    expect(body.name).toEqual('body');
+    expect(body.text).toEqual('\n        \n        \n    ');
+    expect(body.attributes.size).toBe(0);
+    expect(body.children).toHaveLength(2);
+
+    const h1 = body.children[0];
+
+    expect(h1).toBeInstanceOf(Tag);
+    expect(h1.name).toEqual('h1');
+    expect(h1.text).toEqual('This is a test!');
+    expect(h1.attributes.size).toBe(0);
+    expect(h1.children).toHaveLength(0);
+
+    const p = body.children[1];
+
+    expect(p).toBeInstanceOf(Tag);
+    expect(p.name).toEqual('p');
+    expect(p.text).toEqual('Hello, World!');
+    expect(p.attributes.size).toBe(1);
+    expect(p.attributes.get('class')).toEqual('hello-world');
+    expect(p.children).toHaveLength(0);
+});
+
 test('With multiple tags', () => {
     // Given
     const input = `\

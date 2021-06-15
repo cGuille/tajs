@@ -11,6 +11,7 @@ class Tag {
         this.name = name;
         this.attributes = new Map();
         this.text = '';
+        this.children = [];
     }
 }
 
@@ -33,13 +34,23 @@ class Parser {
     parseTag() {
         this.consumeNextChar('<');
 
-        const tag = new Tag(this.consumeToken());
+        const tagName = this.consumeToken();
+        if (!tagName) {
+            throw new ParseError('Tag name cannot be empty', this.source, this.position);
+        }
+
+        const tag = new Tag(tagName);
 
         tag.attributes = this.parseAttributes();
 
         this.consumeNextChar('>');
 
         tag.text = this.consumeWhile(nextChar => nextChar !== '<');
+
+        while (this.nextChar() === '<' && this.lookAhead(1) !== '/') {
+            tag.children.push(this.parseTag());
+            tag.text += this.consumeWhile(nextChar => nextChar !== '<');
+        }
 
         this.consumeNextChar('<');
         this.consumeNextChar('/');
@@ -93,6 +104,14 @@ class Parser {
 
     nextChar() {
         return this.source[this.position];
+    }
+
+    lookAhead(n) {
+        if (n < 1) {
+            n = 1;
+        }
+
+        return this.source[this.position + n];
     }
 
     consumeNextChar(expectedChar) {
