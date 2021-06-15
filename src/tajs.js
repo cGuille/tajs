@@ -28,6 +28,8 @@ class Parser {
 
         const tag = new Tag(this.consumeToken());
 
+        tag.attributes = this.parseAttributes();
+
         this.consumeNextChar('>');
 
         tag.text = this.consumeWhile(nextChar => nextChar !== '<');
@@ -44,6 +46,38 @@ class Parser {
         this.consumeNextChar('>');
 
         return tag;
+    }
+
+    parseAttributes() {
+        const attributes = new Map();
+        let attribute = null;
+
+        while (attribute = this.parseAttribute()) {
+            attributes.set(attribute.name, attribute.value);
+        }
+
+        return attributes;
+    }
+
+    parseAttribute() {
+        this.consumeWhitespaces();
+
+        if (this.nextChar() === '>') {
+            return null;
+        }
+
+        const attribute = {};
+
+        attribute.name = this.consumeToken();
+
+        this.consumeNextChar('=');
+        this.consumeNextChar('"');
+
+        attribute.value = this.consumeWhile(nextChar => nextChar !== '"');
+
+        this.consumeNextChar('"');
+
+        return attribute;
     }
 
     nextChar() {

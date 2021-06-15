@@ -31,6 +31,71 @@ const singleTagInputs = [
             attributes: new Map(),
         },
     },
+    {
+        description: 'a tag with a single attribute',
+        input: '<dummy example="This is an example attribute w/ &quot;some&quot; text"></dummy>',
+        expected: {
+            tagName: 'dummy',
+            text: '',
+            attributes: new Map([
+                ['example', 'This is an example attribute w/ &quot;some&quot; text'],
+            ]),
+        },
+    },
+    {
+        description: 'a tag with a multiple attributes',
+        input: '<dummy attr1="val1" attr2="val2"></dummy>',
+        expected: {
+            tagName: 'dummy',
+            text: '',
+            attributes: new Map([
+                ['attr1', 'val1'],
+                ['attr2', 'val2'],
+            ]),
+        },
+    },
+    {
+        description: 'a tag with a duplicated attributes',
+        input: '<dummy attr1="val1" attr2="val2" attr1="val3"></dummy>',
+        expected: {
+            tagName: 'dummy',
+            text: '',
+            attributes: new Map([
+                ['attr1', 'val3'],
+                ['attr2', 'val2'],
+            ]),
+        },
+    },
+    {
+        description: 'a tag with a multi-line attributes',
+        input: '<dummy\nattr1="val1"\nattr2="val2"\n></dummy>',
+        expected: {
+            tagName: 'dummy',
+            text: '',
+            attributes: new Map([
+                ['attr1', 'val1'],
+                ['attr2', 'val2'],
+            ]),
+        },
+    },
+    {
+        description: 'a tag with both attributes and text node',
+        input: `
+<dummy
+    attr1="val1"
+    attr2="val2"
+>
+    Dummy text node
+</dummy>`,
+        expected: {
+            tagName: 'dummy',
+            text: '\n    Dummy text node\n',
+            attributes: new Map([
+                ['attr1', 'val1'],
+                ['attr2', 'val2'],
+            ]),
+        },
+    },
 ];
 
 describe.each(singleTagInputs)('The parser returns a list containing the parsed tag', testCase => {
@@ -65,6 +130,14 @@ const invalidInputs = [
     {
         description: 'non matching tags',
         input: '<foo></bar>',
+    },
+    {
+        description: 'a tag with an attribute containing double quotes',
+        input: `<dummy example="Wow, "this" is not OK"></dummy>`,
+    },
+    {
+        description: 'a tag with an attribute containing backslash escaped double quotes',
+        input: `<dummy example="Wow, \\"this\\" is not OK"></dummy>`,
     },
 ];
 
