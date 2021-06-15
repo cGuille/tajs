@@ -1,0 +1,24 @@
+{
+  "name": "@cguille/tajs",
+  "version": "0.1.0",
+  "description": "Simple tags parser in Vanilla JS.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "jest --watch",
+    "test": "jest"
+  },
+  "keywords": [
+    "js",
+    "vanilla js",
+    "tags",
+    "html",
+    "xml",
+    "parser",
+    "parsing"
+  ],
+  "author": "Guillaume Charmetant <cguille.dev@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^27.0.4"
+  }
+}
