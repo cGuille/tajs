@@ -122,6 +122,37 @@ describe.each(singleTagInputs)('The parser returns a list containing the parsed 
     });
 });
 
+test('With multiple tags', () => {
+    // Given
+    const input = `\
+<script type="application/json">
+{
+    "this is": "just an example"
+}
+</script>
+<script type="text/javascript">
+    alert('Hello, World!');
+</script>
+`;
+    const parser = new Parser();
+
+    // When
+    const tags = parser.parse(input);
+
+    // Then
+    expect(tags).toHaveLength(2);
+
+    tags.forEach(tag => expect(tag).toBeInstanceOf(Tag));
+
+    expect(tags[0].name).toEqual('script');
+    expect(tags[0].text).toEqual('\n{\n    "this is": "just an example"\n}\n');
+    expect(tags[0].attributes.get('type')).toEqual('application/json');
+
+    expect(tags[1].name).toEqual('script');
+    expect(tags[1].text).toEqual("\n    alert('Hello, World!');\n");
+    expect(tags[1].attributes.get('type')).toEqual('text/javascript');
+});
+
 const invalidInputs = [
     {
         description: 'a single word',

@@ -19,11 +19,18 @@ class Parser {
         this.source = source;
         this.position = 0;
 
-        return [this.parseTag()];
+        const tags = [];
+
+        do {
+            this.consumeWhitespaces();
+            tags.push(this.parseTag());
+            this.consumeWhitespaces();
+        } while (!this.isAtEof());
+
+        return tags;
     }
 
     parseTag() {
-        this.consumeWhitespaces();
         this.consumeNextChar('<');
 
         const tag = new Tag(this.consumeToken());
