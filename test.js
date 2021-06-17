@@ -1,6 +1,6 @@
+import { ElementNode, TextNode } from './src/node.js';
 import ParseError from './src/parse-error.js';
 import Parser from './src/parser.js';
-import Tag from './src/tag.js';
 
 const singleTagInputs = [
     {
@@ -97,7 +97,7 @@ const singleTagInputs = [
     },
 ];
 
-describe.each(singleTagInputs)('The parser returns a list containing the parsed tag', testCase => {
+describe.each(singleTagInputs)('The parser returns a list containing the parsed element', testCase => {
     test(`with ${testCase.description}`, () => {
         // Given
         const parser = new Parser();
@@ -108,15 +108,15 @@ describe.each(singleTagInputs)('The parser returns a list containing the parsed 
         // Then
         expect(result).toHaveLength(1);
 
-        const tag = result[0];
+        const element = result[0];
 
-        expect(tag).toBeInstanceOf(Tag);
-        expect(tag.name).toEqual(testCase.expected.tagName);
-        expect(tag.text).toEqual(testCase.expected.text);
+        expect(element).toBeInstanceOf(ElementNode);
+        expect(element.tagName).toEqual(testCase.expected.tagName);
+        expect(element.textContent).toEqual(testCase.expected.text);
 
-        expect(tag.attributes.size).toEqual(testCase.expected.attributes.size);
+        expect(element.attributes.size).toEqual(testCase.expected.attributes.size);
         testCase.expected.attributes.forEach((expectedValue, attributeName) => {
-            expect(tag.attributes.get(attributeName)).toEqual(expectedValue);
+            expect(element.attributes.get(attributeName)).toEqual(expectedValue);
         });
     });
 });
@@ -134,43 +134,64 @@ test('With nested tags', () => {
     const parser = new Parser();
 
     // When
-    const tags = parser.parse(input);
+    const elements = parser.parse(input);
 
     // Then
-    expect(tags).toHaveLength(1);
+    expect(elements).toHaveLength(1);
 
-    const html = tags[0];
+    const html = elements[0];
 
-    expect(html).toBeInstanceOf(Tag);
-    expect(html.name).toEqual('html');
-    expect(html.text).toEqual('\n    \n');
+    expect(html).toBeInstanceOf(ElementNode);
+    expect(html.tagName).toEqual('html');
+    expect(html.textContent).toEqual('\n    \n        This is a test!\n        Hello, World!\n    \n');
     expect(html.attributes.size).toBe(0);
-    expect(html.children).toHaveLength(1);
+    expect(html.children).toHaveLength(3);
 
-    const body = html.children[0];
+    expect(html.children[0]).toBeInstanceOf(TextNode);
+    expect(html.children[0].textContent).toEqual('\n    ');
 
-    expect(body).toBeInstanceOf(Tag);
-    expect(body.name).toEqual('body');
-    expect(body.text).toEqual('\n        \n        \n    ');
+    const body = html.children[1];
+
+    expect(html.children[2]).toBeInstanceOf(TextNode);
+    expect(html.children[2].textContent).toEqual('\n');
+
+    expect(body).toBeInstanceOf(ElementNode);
+    expect(body.tagName).toEqual('body');
+    expect(body.textContent).toEqual('\n        This is a test!\n        Hello, World!\n    ');
     expect(body.attributes.size).toBe(0);
-    expect(body.children).toHaveLength(2);
+    expect(body.children).toHaveLength(5);
 
-    const h1 = body.children[0];
+    expect(body.children[0]).toBeInstanceOf(TextNode);
+    expect(body.children[0].textContent).toEqual('\n        ');
 
-    expect(h1).toBeInstanceOf(Tag);
-    expect(h1.name).toEqual('h1');
-    expect(h1.text).toEqual('This is a test!');
+    const h1 = body.children[1];
+
+    expect(body.children[2]).toBeInstanceOf(TextNode);
+    expect(body.children[2].textContent).toEqual('\n        ');
+
+    const p = body.children[3];
+
+    expect(body.children[4]).toBeInstanceOf(TextNode);
+    expect(body.children[4].textContent).toEqual('\n    ');
+
+    expect(h1).toBeInstanceOf(ElementNode);
+    expect(h1.tagName).toEqual('h1');
+    expect(h1.textContent).toEqual('This is a test!');
     expect(h1.attributes.size).toBe(0);
-    expect(h1.children).toHaveLength(0);
+    expect(h1.children).toHaveLength(1);
 
-    const p = body.children[1];
+    expect(h1.children[0]).toBeInstanceOf(TextNode);
+    expect(h1.children[0].textContent).toEqual('This is a test!');
 
-    expect(p).toBeInstanceOf(Tag);
-    expect(p.name).toEqual('p');
-    expect(p.text).toEqual('Hello, World!');
+    expect(p).toBeInstanceOf(ElementNode);
+    expect(p.tagName).toEqual('p');
+    expect(p.textContent).toEqual('Hello, World!');
     expect(p.attributes.size).toBe(1);
     expect(p.attributes.get('class')).toEqual('hello-world');
-    expect(p.children).toHaveLength(0);
+    expect(p.children).toHaveLength(1);
+
+    expect(p.children[0]).toBeInstanceOf(TextNode);
+    expect(p.children[0].textContent).toEqual('Hello, World!');
 });
 
 test('With multiple tags', () => {
@@ -188,20 +209,20 @@ test('With multiple tags', () => {
     const parser = new Parser();
 
     // When
-    const tags = parser.parse(input);
+    const elements = parser.parse(input);
 
     // Then
-    expect(tags).toHaveLength(2);
+    expect(elements).toHaveLength(2);
 
-    tags.forEach(tag => expect(tag).toBeInstanceOf(Tag));
+    elements.forEach(element => expect(element).toBeInstanceOf(ElementNode));
 
-    expect(tags[0].name).toEqual('script');
-    expect(tags[0].text).toEqual('\n{\n    "this is": "just an example"\n}\n');
-    expect(tags[0].attributes.get('type')).toEqual('application/json');
+    expect(elements[0].tagName).toEqual('script');
+    expect(elements[0].textContent).toEqual('\n{\n    "this is": "just an example"\n}\n');
+    expect(elements[0].attributes.get('type')).toEqual('application/json');
 
-    expect(tags[1].name).toEqual('script');
-    expect(tags[1].text).toEqual("\n    alert('Hello, World!');\n");
-    expect(tags[1].attributes.get('type')).toEqual('text/javascript');
+    expect(elements[1].tagName).toEqual('script');
+    expect(elements[1].textContent).toEqual("\n    alert('Hello, World!');\n");
+    expect(elements[1].attributes.get('type')).toEqual('text/javascript');
 });
 
 const invalidInputs = [

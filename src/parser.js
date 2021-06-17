@@ -1,5 +1,5 @@
+import { ElementNode, TextNode } from './node.js';
 import ParseError from './parse-error.js';
-import Tag from './tag.js';
 
 const tokenRegExp = /\w|-/;
 const whitespacesRegExp = /\s/;
@@ -12,18 +12,18 @@ export default class Parser {
         this.source = source;
         this.position = 0;
 
-        const tags = [];
+        const elements = [];
 
         do {
             this.consumeWhitespaces();
-            tags.push(this.parseTag());
+            elements.push(this.parseElement());
             this.consumeWhitespaces();
         } while (!this.isAtEof());
 
-        return tags;
+        return elements;
     }
 
-    parseTag() {
+    parseElement() {
         this.consumeNextChar('<');
 
         const tagName = this.consumeToken();
@@ -31,17 +31,24 @@ export default class Parser {
             throw new ParseError('Tag name cannot be empty', this.source, this.position);
         }
 
-        const tag = new Tag(tagName);
+        const element = new ElementNode(tagName);
 
-        tag.attributes = this.parseAttributes();
+        this.parseAttributes(element);
 
         this.consumeNextChar('>');
 
-        tag.text = this.consumeWhile(nextChar => nextChar !== '<');
+        const text = this.consumeWhile(nextChar => nextChar !== '<');
+        if (text) {
+            element.children.push(new TextNode(text));
+        }
 
         while (this.nextChar() === '<' && this.lookAhead(1) !== '/') {
-            tag.children.push(this.parseTag());
-            tag.text += this.consumeWhile(nextChar => nextChar !== '<');
+            element.children.push(this.parseElement());
+
+            const text = this.consumeWhile(nextChar => nextChar !== '<');
+            if (text) {
+                element.children.push(new TextNode(text));
+            }
         }
 
         this.consumeNextChar('<');
@@ -49,9 +56,9 @@ export default class Parser {
 
         const closingTagName = this.consumeToken();
 
-        if (tag.name !== closingTagName) {
+        if (element.tagName !== closingTagName) {
             throw new ParseError(
-                `Tag name '${tag.name}' and closing tag name '${closingTagName}' do not match`,
+                `Tag name '${element.tagName}' and closing tag name '${closingTagName}' do not match`,
                 this.source,
                 this.position - closingTagName.length
             );
@@ -59,18 +66,15 @@ export default class Parser {
 
         this.consumeNextChar('>');
 
-        return tag;
+        return element;
     }
 
-    parseAttributes() {
-        const attributes = new Map();
+    parseAttributes(element) {
         let attribute = null;
 
         while (attribute = this.parseAttribute()) {
-            attributes.set(attribute.name, attribute.value);
+            element.attributes.set(attribute.name, attribute.value);
         }
-
-        return attributes;
     }
 
     parseAttribute() {
