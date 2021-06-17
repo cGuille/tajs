@@ -1,8 +1,6 @@
-import {
-    ParseError,
-    Parser,
-    Tag,
-} from './src/parser.js';
+import ParseError from './src/parse-error.js';
+import Parser from './src/parser.js';
+import Tag from './src/tag.js';
 
 const singleTagInputs = [
     {
