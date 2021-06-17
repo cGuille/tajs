@@ -1,7 +1,8 @@
-const tajs = require('./src/tajs');
-const Parser = tajs.Parser;
-const Tag = tajs.Tag;
-const ParseError = tajs.ParseError;
+import {
+    ParseError,
+    Parser,
+    Tag,
+} from './src/parser.js';
 
 const singleTagInputs = [
     {

@@ -2,10 +2,11 @@
   "name": "@cguille/tajs",
   "version": "0.1.0",
   "description": "Simple tags parser in Vanilla JS.",
-  "main": "index.js",
+  "type": "module",
+  "main": "src/parser.js",
   "scripts": {
-    "dev": "jest --watch",
-    "test": "jest"
+    "dev": "npm test -- --watch",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "keywords": [
     "js",

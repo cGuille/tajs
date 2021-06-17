@@ -1,4 +1,8 @@
-'use strict';
+export {
+    ParseError,
+    Parser,
+    Tag,
+};
 
 const tokenRegExp = /\w|-/;
 const whitespacesRegExp = /\s/;
@@ -200,7 +204,3 @@ function findClosestChar(c, str, startPos, step) {
 
     return currentPos >= 0 && currentPos < str.length ? currentPos : null;
 }
-
-module.exports.Parser = Parser;
-module.exports.Tag = Tag;
-module.exports.ParseError = ParseError;
