@@ -63,6 +63,7 @@ const singleTagInputs = [
                 ['attr1', 'val3'],
                 ['attr2', 'val2'],
             ]),
+            serialisation: '<dummy attr1="val3" attr2="val2"></dummy>',
         },
     },
     {
@@ -75,6 +76,7 @@ const singleTagInputs = [
                 ['attr1', 'val1'],
                 ['attr2', 'val2'],
             ]),
+            serialisation: '<dummy attr1="val1" attr2="val2"></dummy>',
         },
     },
     {
@@ -93,6 +95,7 @@ const singleTagInputs = [
                 ['attr1', 'val1'],
                 ['attr2', 'val2'],
             ]),
+            serialisation: '<dummy attr1="val1" attr2="val2">\n    Dummy text node\n</dummy>',
         },
     },
 ];
@@ -100,6 +103,10 @@ const singleTagInputs = [
 describe.each(singleTagInputs)('The parser returns a list containing the parsed element', testCase => {
     test(`with ${testCase.description}`, () => {
         // Given
+        if (typeof(testCase.expected.serialisation) === 'undefined') {
+            testCase.expected.serialisation = testCase.input;
+        }
+
         const parser = new Parser();
 
         // When
@@ -118,6 +125,8 @@ describe.each(singleTagInputs)('The parser returns a list containing the parsed 
         testCase.expected.attributes.forEach((expectedValue, attributeName) => {
             expect(element.attributes.get(attributeName)).toEqual(expectedValue);
         });
+
+        expect(element.toString()).toEqual(testCase.expected.serialisation);
     });
 });
 
@@ -192,6 +201,16 @@ test('With nested tags', () => {
 
     expect(p.children[0]).toBeInstanceOf(TextNode);
     expect(p.children[0].textContent).toEqual('Hello, World!');
+
+    const expectedSerialisation = `\
+<html>
+    <body>
+        <h1>This is a test!</h1>
+        <p class="hello-world">Hello, World!</p>
+    </body>
+</html>`;
+
+    expect(html.toString()).toEqual(expectedSerialisation);
 });
 
 test('With multiple tags', () => {
